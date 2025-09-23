@@ -1,12 +1,12 @@
 // Hybrid entity system - tries Supabase first, falls back to mock data
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import {
   mockProducts, mockBrands, mockCategories, mockOrders,
   mockUsers, mockShipments, mockDealerApplications, mockSiteSettings
 } from './mockData';
-import type { 
-  Product, Brand, Category, Order, User, DealerApplication, 
-  Shipment, SiteSettings, PageVisit 
+import type {
+  Product, Brand, Category, Order, User, DealerApplication,
+  Shipment, SiteSettings, PageVisit
 } from './types';
 
 // Check if Supabase tables exist
@@ -28,6 +28,12 @@ class HybridEntity<T extends { id: string; created_date: string; updated_date?: 
   }
 
   async list(sort?: string, limit?: number): Promise<T[]> {
+    // Check if Supabase is configured, if not use mock data immediately
+    if (!isSupabaseConfigured()) {
+      console.warn(`Using mock data for ${this.tableName} - Supabase not configured`);
+      return this.getMockData(sort, limit);
+    }
+
     try {
       // Try Supabase first
       let query = supabase.from(this.tableName).select('*');
@@ -58,6 +64,12 @@ class HybridEntity<T extends { id: string; created_date: string; updated_date?: 
   }
 
   async filter(filters: Record<string, any>, sort?: string, limit?: number): Promise<T[]> {
+    // Check if Supabase is configured, if not use mock data immediately
+    if (!isSupabaseConfigured()) {
+      console.warn(`Using filtered mock data for ${this.tableName} - Supabase not configured`);
+      return this.getFilteredMockData(filters, sort, limit);
+    }
+
     try {
       // Try Supabase first
       let query = supabase.from(this.tableName).select('*');
@@ -92,6 +104,12 @@ class HybridEntity<T extends { id: string; created_date: string; updated_date?: 
   }
 
   async create(entityData: Omit<T, 'id' | 'created_date' | 'updated_date'>): Promise<T> {
+    // Check if Supabase is configured, if not use mock data immediately
+    if (!isSupabaseConfigured()) {
+      console.warn(`Using mock creation for ${this.tableName} - Supabase not configured`);
+      return this.createMockEntity(entityData);
+    }
+
     try {
       // Try Supabase first
       const { data, error } = await supabase
@@ -208,6 +226,11 @@ class HybridUserEntity extends HybridEntity<User> {
   }
 
   async me(): Promise<User> {
+    // Check if Supabase is configured, if not throw auth error immediately
+    if (!isSupabaseConfigured()) {
+      throw new Error('User not authenticated');
+    }
+    
     // Always throw auth error for public pages - this is expected
     throw new Error('User not authenticated');
   }
@@ -233,6 +256,12 @@ class HybridSiteSettingsEntity extends HybridEntity<SiteSettings> {
   }
 
   async list(): Promise<SiteSettings[]> {
+    // Check if Supabase is configured, if not use mock data immediately
+    if (!isSupabaseConfigured()) {
+      console.warn('Using mock site settings - Supabase not configured');
+      return [mockSiteSettings];
+    }
+
     try {
       const { data, error } = await supabase.from('site_settings').select('*').limit(1);
       
@@ -258,6 +287,17 @@ class HybridPageVisitEntity extends HybridEntity<PageVisit> {
   }
 
   async create(visitData: Omit<PageVisit, 'id' | 'created_date'>): Promise<PageVisit> {
+    // Check if Supabase is configured, if not use local storage immediately
+    if (!isSupabaseConfigured()) {
+      const visit: PageVisit = {
+        ...visitData,
+        id: `visit_${Date.now()}`,
+        created_date: new Date().toISOString()
+      };
+      this.visits.push(visit);
+      return visit;
+    }
+
     try {
       // Try Supabase first
       const { data, error } = await supabase
