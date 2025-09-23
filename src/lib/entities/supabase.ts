@@ -124,7 +124,7 @@ class SupabaseEntity<T extends { id: string; created_date: string; updated_date?
   }
 
   // Get schema (mock for compatibility)
-  schema(): any {
+  schema(): Record<string, unknown> {
     return { name: this.tableName, type: 'object', properties: {} };
   }
 }
@@ -155,7 +155,7 @@ class SupabaseUserEntity extends SupabaseEntity<User> {
       }
       
       return users[0];
-    } catch (error) {
+    } catch {
       // Graceful fallback when database isn't set up yet
       throw new Error('User not authenticated');
     }

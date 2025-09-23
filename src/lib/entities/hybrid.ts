@@ -14,7 +14,7 @@ async function checkTableExists(tableName: string): Promise<boolean> {
   try {
     const { error } = await supabase.from(tableName).select('id').limit(1);
     return !error;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -50,7 +50,7 @@ class HybridEntity<T extends { id: string; created_date: string; updated_date?: 
       }
       
       return data || [];
-    } catch (error) {
+    } catch {
       // Fall back to mock data
       console.warn(`Using mock data for ${this.tableName} - database not ready`);
       return this.getMockData(sort, limit);
@@ -84,7 +84,7 @@ class HybridEntity<T extends { id: string; created_date: string; updated_date?: 
       }
       
       return data || [];
-    } catch (error) {
+    } catch {
       // Fall back to mock data with filters
       console.warn(`Using filtered mock data for ${this.tableName} - database not ready`);
       return this.getFilteredMockData(filters, sort, limit);
@@ -107,7 +107,7 @@ class HybridEntity<T extends { id: string; created_date: string; updated_date?: 
       }
       
       return data;
-    } catch (error) {
+    } catch {
       // Fall back to mock creation
       console.warn(`Using mock creation for ${this.tableName} - database not ready`);
       return this.createMockEntity(entityData);
@@ -179,14 +179,14 @@ class HybridEntity<T extends { id: string; created_date: string; updated_date?: 
   }
 
   // Standard methods (simplified for hybrid mode)
-  async update(id: string, updates: Partial<T>): Promise<T> {
+  async update(id: string, _updates: Partial<T>): Promise<T> {
     // For now, return mock data - would implement real Supabase update
     const item = this.mockData.find(item => item.id === id);
     if (!item) throw new Error(`${this.tableName} not found`);
     return item;
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     // For now, do nothing - would implement real Supabase delete
     console.warn('Delete operation not implemented in hybrid mode');
   }
@@ -196,7 +196,7 @@ class HybridEntity<T extends { id: string; created_date: string; updated_date?: 
     return entities.map(entity => this.createMockEntity(entity));
   }
 
-  schema(): any {
+  schema(): Record<string, unknown> {
     return { name: this.tableName, type: 'object', properties: {} };
   }
 }
@@ -242,7 +242,7 @@ class HybridSiteSettingsEntity extends HybridEntity<SiteSettings> {
       }
       
       return data;
-    } catch (error) {
+    } catch {
       console.warn('Using mock site settings - database not ready');
       return [mockSiteSettings];
     }
@@ -278,7 +278,7 @@ class HybridPageVisitEntity extends HybridEntity<PageVisit> {
       }
       
       return data;
-    } catch (error) {
+    } catch {
       // Fall back to local storage
       const visit: PageVisit = {
         ...visitData,

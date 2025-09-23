@@ -16,9 +16,31 @@ import {
   ArrowRight,
   AlertCircle,
   CheckCircle,
-  Clock,
-  DollarSign
+  Clock
 } from "lucide-react";
+
+interface DashboardOrder {
+  id: string;
+  order_number: string;
+  dealer_email: string;
+  total_amount_npr?: number;
+  status: string;
+}
+
+interface DashboardApplication {
+  id: string;
+  business_name: string;
+  contact_person: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+}
+
+interface StatCardProps {
+  title: string;
+  value: number;
+  icon: React.ComponentType<{ className?: string }>;
+  trend?: string;
+  color: string;
+}
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<{
@@ -26,8 +48,8 @@ export default function AdminDashboard() {
     totalOrders: number;
     pendingApplications: number;
     totalDealers: number;
-    recentOrders: any[];
-    recentApplications: any[];
+    recentOrders: DashboardOrder[];
+    recentApplications: DashboardApplication[];
   }>({
     totalProducts: 0,
     totalOrders: 0,
@@ -55,8 +77,8 @@ export default function AdminDashboard() {
       setStats({
         totalProducts: products.length,
         totalOrders: orders.length,
-        pendingApplications: applications.filter((app: any) => app.status === 'Pending').length,
-        totalDealers: users.filter((user: any) => user.dealer_status === 'Approved').length,
+        pendingApplications: applications.filter((app: DashboardApplication) => app.status === 'Pending').length,
+        totalDealers: users.filter((user: { dealer_status?: string }) => user.dealer_status === 'Approved').length,
         recentOrders: orders.slice(0, 5),
         recentApplications: applications.slice(0, 5)
       });
@@ -66,7 +88,7 @@ export default function AdminDashboard() {
     setIsLoading(false);
   };
 
-  const StatCard = ({ title, value, icon: Icon, trend, color }: any) => (
+  const StatCard = ({ title, value, icon: Icon, trend, color }: StatCardProps) => (
     <Card>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
@@ -159,7 +181,7 @@ export default function AdminDashboard() {
                   <p className="text-center text-gray-500 py-8">No recent orders</p>
                 ) : (
                   <div className="space-y-4">
-                    {stats.recentOrders.map((order: any) => (
+                    {stats.recentOrders.map((order: DashboardOrder) => (
                       <div key={order.id} className="flex items-center space-x-4 p-3 border rounded-lg">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                           <ShoppingCart className="w-5 h-5 text-blue-600" />
@@ -207,7 +229,7 @@ export default function AdminDashboard() {
                   <p className="text-center text-gray-500 py-8">No pending applications</p>
                 ) : (
                   <div className="space-y-4">
-                    {stats.recentApplications.map((app: any) => (
+                    {stats.recentApplications.map((app: DashboardApplication) => (
                       <div key={app.id} className="flex items-center space-x-4 p-3 border rounded-lg">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                           app.status === 'Pending' ? 'bg-yellow-100' :

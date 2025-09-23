@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { createPageUrl } from "@/lib/utils";
 import { Product } from "@/lib/entities";
+import type { Product as ProductType, ProductVariant } from "@/lib/entities/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,13 +25,13 @@ import {
   Minus
 } from "lucide-react";
 
-export default function ProductDetail() {
+function ProductDetailContent() {
   const searchParams = useSearchParams();
   const { getText } = useAppContext();
   const orderCart = useCart('orderCart');
   
-  const [product, setProduct] = useState<any>(null);
-  const [selectedVariant, setSelectedVariant] = useState<any>(null);
+  const [product, setProduct] = useState<ProductType | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [addToCartStatus, setAddToCartStatus] = useState<string | null>(null);
@@ -62,7 +63,7 @@ export default function ProductDetail() {
     setIsLoading(true);
     try {
       const products = await Product.list();
-      const foundProduct = products.find((p: any) => p.slug === slug);
+      const foundProduct = products.find((p: ProductType) => p.slug === slug);
       if (foundProduct) {
         setProduct(foundProduct);
         if (foundProduct.variants && foundProduct.variants.length > 0) {
@@ -208,7 +209,7 @@ export default function ProductDetail() {
                   </h3>
                   
                   <div className="grid grid-cols-1 gap-3">
-                    {product.variants.map((variant: any) => (
+                    {product.variants.map((variant: ProductVariant) => (
                       <Card
                         key={variant.id}
                         className={`cursor-pointer transition-all duration-200 ${
@@ -358,5 +359,22 @@ export default function ProductDetail() {
         </div>
       </div>
     </Layout>
+  );
+}
+
+export default function ProductDetail() {
+  return (
+    <Suspense fallback={
+      <Layout currentPageName="ProductDetail">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600">Loading product details...</p>
+          </div>
+        </div>
+      </Layout>
+    }>
+      <ProductDetailContent />
+    </Suspense>
   );
 }

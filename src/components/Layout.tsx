@@ -1,14 +1,12 @@
 'use client'
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { createPageUrl } from "@/lib/utils";
 import { SiteSettings, PageVisit, User } from "@/lib/entities";
 import { useAppContext } from "@/components/AppContext";
 import {
-  Menu,
-  X,
   Package,
   Briefcase,
   ShoppingCart,
@@ -58,7 +56,7 @@ interface LayoutProps {
   currentPageName?: string;
 }
 
-export default function Layout({ children, currentPageName }: LayoutProps) {
+function LayoutContent({ children, currentPageName }: LayoutProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { isDark, toggleTheme, language, toggleLanguage, getText } = useAppContext();
@@ -311,5 +309,15 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
         {children}
       </main>
     </div>
+  );
+}
+
+export default function Layout({ children, currentPageName }: LayoutProps) {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+      <LayoutContent currentPageName={currentPageName}>
+        {children}
+      </LayoutContent>
+    </Suspense>
   );
 }
