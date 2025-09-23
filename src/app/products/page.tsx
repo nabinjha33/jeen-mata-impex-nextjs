@@ -8,12 +8,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import Layout from "@/components/Layout";
 import {
-  Search,
-  Filter,
-  Package,
-  Grid,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import Layout from "@/components/Layout";
+import { 
+  Search, 
+  Package, 
+  Grid, 
   List,
   Star,
   ArrowRight
@@ -236,35 +242,38 @@ export default function Products() {
 
               {/* Filters */}
               <div className="flex flex-col sm:flex-row gap-4">
-                <select 
-                  value={selectedBrand} 
-                  onChange={(e) => setSelectedBrand(e.target.value)}
-                  className="px-3 py-2 border border-gray-200 rounded-md"
-                >
-                  {brands.map(brand => (
-                    <option key={brand} value={brand}>{brand}</option>
-                  ))}
-                </select>
+                <Select value={selectedBrand} onValueChange={setSelectedBrand}>
+                  <SelectTrigger className="w-full sm:w-40">
+                    <SelectValue placeholder="Brand" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {brands.map(brand => (
+                      <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-                <select 
-                  value={selectedCategory} 
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="px-3 py-2 border border-gray-200 rounded-md"
-                >
-                  {categories.map(category => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
-                </select>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-full sm:w-40">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(category => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-                <select 
-                  value={selectedStock} 
-                  onChange={(e) => setSelectedStock(e.target.value)}
-                  className="px-3 py-2 border border-gray-200 rounded-md"
-                >
-                  {stockStatuses.map(status => (
-                    <option key={status} value={status}>{status}</option>
-                  ))}
-                </select>
+                <Select value={selectedStock} onValueChange={setSelectedStock}>
+                  <SelectTrigger className="w-full sm:w-40">
+                    <SelectValue placeholder="Stock" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {stockStatuses.map(status => (
+                      <SelectItem key={status} value={status}>{status}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
@@ -278,15 +287,16 @@ export default function Products() {
             </div>
             
             <div className="flex items-center gap-4 mt-4 sm:mt-0">
-              <select 
-                value={sortBy} 
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 border border-gray-200 rounded-md"
-              >
-                <option value="name">Sort by Name</option>
-                <option value="brand">Sort by Brand</option>
-                <option value="newest">Newest First</option>
-              </select>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Sort by Name</SelectItem>
+                  <SelectItem value="brand">Sort by Brand</SelectItem>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                </SelectContent>
+              </Select>
 
               <div className="flex border border-gray-200 rounded-lg">
                 <Button
@@ -347,7 +357,7 @@ export default function Products() {
                 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
                 : 'grid-cols-1'
             }`}>
-              {filteredProducts.map((product) => (
+              {filteredProducts.map((product: any) => (
                 <ProductCard 
                   key={product.id} 
                   product={product} 

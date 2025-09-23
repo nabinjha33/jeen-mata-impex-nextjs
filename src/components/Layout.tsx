@@ -23,6 +23,26 @@ import {
   Globe
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarHeader,
+  SidebarFooter,
+  SidebarProvider,
+  SidebarTrigger
+} from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 const publicRoutes = [
   { title: "Home", url: createPageUrl("Home") },
@@ -97,7 +117,7 @@ function LayoutContent({ children, currentPageName }: LayoutProps) {
           if (currentUser) {
             userEmail = currentUser.email;
           }
-        } catch (e) {
+        } catch {
           // User is not logged in, which is fine.
         }
 
@@ -240,75 +260,103 @@ function LayoutContent({ children, currentPageName }: LayoutProps) {
     );
   }
 
-  // Sidebar Layout for Dealer & Admin
+  // Sidebar Layout (Dealer & Admin) - Matching base44 exactly
+  const routes = isAdminPage ? adminRoutes : dealerRoutes;
+  const titlePrefix = isAdminPage ? 'Admin' : 'Dealer';
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-800">
-      {/* Header for Admin/Dealer */}
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href={createPageUrl("Home")} className="flex items-center gap-2">
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <Sidebar className="border-r border-gray-200 dark:border-gray-700 dark:bg-gray-900">
+          <SidebarHeader className="border-b border-gray-200 dark:border-gray-700 p-4">
+            <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-r from-red-600 to-red-700 rounded-lg flex items-center justify-center">
                 <Package className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h2 className="font-semibold text-gray-900 dark:text-white">Jeen Mata Impex</h2>
-                <p className="text-xs text-red-600">{isAdminPage ? 'Admin' : 'Dealer'} Portal</p>
+                <p className="text-xs text-red-600">{titlePrefix} Portal</p>
               </div>
-            </Link>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleTheme}
-              className="text-gray-600 dark:text-gray-300"
-            >
-              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleLanguage}
-              className="text-gray-600 dark:text-gray-300"
-            >
-              <Globe className="w-4 h-4 mr-2" />
-              {language.toUpperCase()}
-            </Button>
-            <Button variant="ghost" size="sm" className="text-gray-600 dark:text-gray-300">
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
-          </div>
-        </div>
-      </header>
+            </div>
+          </SidebarHeader>
 
-      {/* Navigation Menu */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-2">
-        <nav className="flex items-center gap-6 overflow-x-auto">
-          {(isAdminPage ? adminRoutes : dealerRoutes).map((route) => (
-            <Link
-              key={route.title}
-              href={route.url}
-              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
-                pathname === route.url
-                  ? 'bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300'
-                  : 'text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400'
-              }`}
-            >
-              <route.icon className="w-4 h-4" />
-              {route.title}
-            </Link>
-          ))}
-        </nav>
+          <SidebarContent className="p-2 dark:bg-gray-900">
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-2 py-2">
+                Navigation
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {routes.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        className={`hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-700 dark:hover:text-red-300 transition-colors duration-200 rounded-lg mb-1 ${
+                          pathname === item.url ? 'bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300' : 'dark:text-gray-300'
+                        }`}
+                      >
+                        <Link href={item.url} className="flex items-center gap-3 px-3 py-2">
+                          <item.icon className="w-4 h-4" />
+                          <span className="font-medium">{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+
+          <SidebarFooter className="border-t border-gray-200 dark:border-gray-700 p-4 dark:bg-gray-900">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
+                <UserIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 dark:text-white text-sm truncate">
+                  {isDealerPage ? 'Dealer User' : 'Admin User'}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">user@example.com</p>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="dark:text-gray-300">
+                    <Settings className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="dark:bg-gray-800 dark:border-gray-700">
+                  <DropdownMenuItem onClick={toggleTheme} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                    {isDark ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+                    {isDark ? 'Light Mode' : 'Dark Mode'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={toggleLanguage} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                    <Globe className="w-4 h-4 mr-2" />
+                    {language === 'en' ? 'नेपाली' : 'English'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </SidebarFooter>
+        </Sidebar>
+
+        <main className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
+          <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4 md:hidden transition-colors duration-300">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-lg transition-colors duration-200" />
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Jeen Mata Impex</h1>
+            </div>
+          </header>
+
+          <div className="flex-1 overflow-auto">
+            {children}
+          </div>
+        </main>
       </div>
-
-      {/* Main Content */}
-      <main className="flex-1">
-        {children}
-      </main>
-    </div>
+    </SidebarProvider>
   );
 }
 
